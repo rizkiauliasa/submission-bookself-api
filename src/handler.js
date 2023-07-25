@@ -70,4 +70,25 @@ const addBookHandler = (request, h) => {
     return response;
 };
 
-module.exports = { addBookHandler };
+const getAllBooksHandler = () => {
+    const output = books.map(book => {
+        const print = {
+            "id": book.id,
+            "name": book.name,
+            "publisher": book.publisher
+        };
+
+        return print;
+    });
+
+    const response = {
+        status: 'success',
+        data: {
+            'books': output
+        }
+    };
+
+    return response;
+};
+
+module.exports = { addBookHandler, getAllBooksHandler };
