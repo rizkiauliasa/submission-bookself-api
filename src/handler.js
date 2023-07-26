@@ -24,11 +24,7 @@ const addBookHandler = (request, h) => {
         updatedAt
     };
 
-    books.push(newBook);
-
-    const isSuccess = books.filter((book) => book.id === newBook.id).length > 0;
-
-    if (!newBook.name) {
+    if (newBook.name === undefined) {
         const response = h.response({
             status: 'fail',
             message: 'Gagal menambahkan buku. Mohon isi nama buku'
@@ -47,6 +43,10 @@ const addBookHandler = (request, h) => {
         response.code(400);
         return response;
     }
+
+    books.push(newBook);
+
+    const isSuccess = books.filter((book) => book.id === newBook.id).length > 0;
 
     if (isSuccess) {
         const response = h.response({
@@ -70,24 +70,32 @@ const addBookHandler = (request, h) => {
     return response;
 };
 
-const getAllBooksHandler = () => {
-    const output = books.map(book => {
-        const print = {
-            "id": book.id,
-            "name": book.name,
-            "publisher": book.publisher
-        };
+const getAllBooksHandler = (request, h) => {
+    const { reading, finished, name } = request.query;
+    let output = books;
 
-        return print;
-    });
+    if (reading !== undefined) {
+        output = output.filter((book) => book.reading === Boolean(Number(reading) === 1));
+    }
+    if (finished !== undefined) {
+        output = output.filter((book) => book.finished === Boolean(Number(finished) === 1));
+    }
+    if (name !== undefined) {
+        output = output.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()));
+    }
 
-    const response = {
+    const response = h.response({
         status: 'success',
         data: {
-            'books': output
+            books: output.map((book) => ({
+                id: book.id,
+                name: book.name,
+                publisher: book.publisher
+            }))
         }
-    };
+    });
 
+    response.code(200);
     return response;
 };
 
@@ -194,6 +202,8 @@ const deleteBookByIdHandler = (request, h) => {
 
     response.code(404);
     return response;
-}
+};
 
-module.exports = { addBookHandler, getAllBooksHandler, getBookByIdHandler, editBookByIdHandler, deleteBookByIdHandler };
+module.exports = {
+    addBookHandler, getAllBooksHandler, getBookByIdHandler, editBookByIdHandler, deleteBookByIdHandler
+};
